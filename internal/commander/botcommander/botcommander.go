@@ -1,4 +1,4 @@
-package commander
+package botcommander
 
 import (
 	"fmt"
