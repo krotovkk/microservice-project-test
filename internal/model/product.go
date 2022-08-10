@@ -3,9 +3,9 @@ package model
 import "fmt"
 
 type Product struct {
-	id    uint
-	price float64
-	name  string
+	Id    uint    `db:"id"`
+	Price float64 `db:"price"`
+	Name  string  `db:"name"`
 }
 
 func NewProduct(id uint, name string, price float64) (*Product, error) {
@@ -22,39 +22,39 @@ func NewProduct(id uint, name string, price float64) (*Product, error) {
 }
 
 func (p *Product) GetName() string {
-	return p.name
+	return p.Name
 }
 
 func (p *Product) SetName(name string) error {
 	if len(name) < 1 || len(name) > 25 {
-		return fmt.Errorf("bad name: <%v>", name)
+		return fmt.Errorf("bad Name: <%v>", name)
 	}
-	p.name = name
+	p.Name = name
 
 	return nil
 }
 
 func (p *Product) GetId() uint {
-	return p.id
+	return p.Id
 }
 
 func (p *Product) SetId(id uint) {
-	p.id = id
+	p.Id = id
 }
 
 func (p *Product) SetPrice(price float64) error {
 	if price <= 0 {
-		return fmt.Errorf("bad price: <%v>", price)
+		return fmt.Errorf("bad Price: <%v>", price)
 	}
-	p.price = price
+	p.Price = price
 
 	return nil
 }
 
 func (p *Product) GetPrice() float64 {
-	return p.price
+	return p.Price
 }
 
 func (p *Product) String() string {
-	return fmt.Sprintf("id: <%v>; name: <%v>; price: %.2f\n", p.id, p.name, p.price)
+	return fmt.Sprintf("Id: <%v>; Name: <%v>; Price: %.2f\n", p.Id, p.Name, p.Price)
 }

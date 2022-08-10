@@ -5,7 +5,7 @@ option go_package = "gitlab.ozon.dev/krotovkk/homework/pkg/api;api";
 
 import "google/api/annotations.proto";
 
-service Admin {
+service Product {
   // create product endpoint
   rpc ProductCreate(ProductCreateRequest) returns (ProductCreateResponse) {
     option (google.api.http) = {
@@ -52,7 +52,10 @@ message ProductCreateResponse {}
 // ProductList endpoint messages
 // ---------------------------------------------------------------------------------------------------------------------
 
-message ProductListRequest {}
+message ProductListRequest {
+  uint64 limit = 1;
+  uint64 offset = 2;
+}
 message ProductListResponse {
   repeated Product products = 1;
 
