@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/api.proto",
+    "title": "api/cart.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "Admin"
+      "name": "Cart"
     }
   ],
   "consumes": [
@@ -16,14 +16,87 @@
     "application/json"
   ],
   "paths": {
-    "/v1/product": {
-      "delete": {
-        "operationId": "Admin_ProductDelete",
+    "/v1/cart/create": {
+      "post": {
+        "summary": "create Cart endpoint",
+        "operationId": "Cart_CartCreate",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiProductDeleteResponse"
+              "$ref": "#/definitions/apiCartCreateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiCartCreateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/v1/cart/{cartId}/add": {
+      "get": {
+        "summary": "add product to endpoint",
+        "operationId": "Cart_CartAddProduct",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCartAddProductResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "cartId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "productId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/v1/cart/{id}/products": {
+      "get": {
+        "summary": "get Cart products endpoint",
+        "operationId": "Cart_CartGetProducts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCartGetProductsResponse"
             }
           },
           "default": {
@@ -36,147 +109,40 @@
         "parameters": [
           {
             "name": "id",
-            "in": "query",
-            "required": false,
+            "in": "path",
+            "required": true,
             "type": "string",
-            "format": "uint64"
+            "format": "int64"
           }
         ],
         "tags": [
-          "Admin"
-        ]
-      },
-      "post": {
-        "operationId": "Admin_ProductCreate",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiProductCreateResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/apiProductCreateRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Admin"
-        ]
-      },
-      "put": {
-        "operationId": "Admin_ProductUpdate",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiProductUpdateResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/apiProductUpdateRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Admin"
-        ]
-      }
-    },
-    "/v1/products": {
-      "get": {
-        "operationId": "Admin_ProductList",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiProductListResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "Admin"
+          "Cart"
         ]
       }
     }
   },
   "definitions": {
-    "ProductListResponseProduct": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "name": {
-          "type": "string"
-        },
-        "price": {
-          "type": "number",
-          "format": "double"
-        }
-      }
-    },
-    "apiProductCreateRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "price": {
-          "type": "number",
-          "format": "double"
-        }
-      }
-    },
-    "apiProductCreateResponse": {
+    "apiCartAddProductResponse": {
       "type": "object"
     },
-    "apiProductDeleteResponse": {
+    "apiCartCreateRequest": {
       "type": "object"
     },
-    "apiProductListResponse": {
+    "apiCartCreateResponse": {
+      "type": "object"
+    },
+    "apiCartGetProductsResponse": {
       "type": "object",
       "properties": {
         "products": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/ProductListResponseProduct"
+            "$ref": "#/definitions/apiCartGetProductsResponseProduct"
           }
         }
       }
     },
-    "apiProductUpdateRequest": {
+    "apiCartGetProductsResponseProduct": {
       "type": "object",
       "properties": {
         "id": {
@@ -191,9 +157,6 @@
           "format": "double"
         }
       }
-    },
-    "apiProductUpdateResponse": {
-      "type": "object"
     },
     "protobufAny": {
       "type": "object",

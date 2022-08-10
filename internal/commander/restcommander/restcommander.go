@@ -13,15 +13,20 @@ import (
 )
 
 func Run() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// Register gRPC server endpoint
 	// Note: Make sure the gRPC server is running properly and accessible
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	err := gw.RegisterAdminHandlerFromEndpoint(ctx, mux, ":8081", opts)
+
+	err := gw.RegisterProductHandlerFromEndpoint(ctx, mux, ":8081", opts)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = gw.RegisterCartHandlerFromEndpoint(ctx, mux, ":8081", opts)
 	if err != nil {
 		log.Panic(err)
 	}

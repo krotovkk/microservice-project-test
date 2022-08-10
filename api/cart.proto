@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package homework.api;
+option go_package = "gitlab.ozon.dev/krotovkk/homework/pkg/api;api";
+
+import "google/api/annotations.proto";
+
+service Cart {
+  // create Cart endpoint
+  rpc CartCreate(CartCreateRequest) returns (CartCreateResponse) {
+    option (google.api.http) = {
+      post: "/v1/cart/create"
+      body: "*"
+    };
+  };
+
+  // get Cart products endpoint
+  rpc CartGetProducts(CartGetProductsRequest) returns (CartGetProductsResponse) {
+    option (google.api.http) = {
+      get: "/v1/cart/{id}/products"
+    };
+  };
+
+  // add product to endpoint
+  rpc CartAddProduct(CartAddProductRequest) returns (CartAddProductResponse) {
+    option (google.api.http) = {
+      get: "/v1/cart/{cartId}/add"
+    };
+  };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// CartCreate endpoint messages
+// ---------------------------------------------------------------------------------------------------------------------
+
+message CartCreateRequest {
+}
+message CartCreateResponse {}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// CartGetProducts endpoint messages
+// ---------------------------------------------------------------------------------------------------------------------
+
+message CartGetProductsRequest {
+  int64 id = 1;
+}
+message CartGetProductsResponse {
+  repeated Product products = 1;
+
+  message Product {
+    uint64 id = 1;
+    string name = 2;
+    double price = 3;
+  }
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------------
+// CartAddProduct endpoint messages
+// ---------------------------------------------------------------------------------------------------------------------
+
+message CartAddProductRequest {
+  int64 cartId = 1;
+  int64 productId = 2;
+}
+message CartAddProductResponse {}

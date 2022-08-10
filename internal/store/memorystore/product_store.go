@@ -1,6 +1,7 @@
 package memorystore
 
 import (
+	"context"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -30,7 +31,7 @@ func NewMemoryProductStore() *MemoryProductStore {
 	}
 }
 
-func (s *MemoryProductStore) List() []*model.Product {
+func (s *MemoryProductStore) GetAllProducts(context.Context, uint64, uint64) ([]*model.Product, error) {
 	s.waitChan <- struct{}{}
 	s.mux.RLock()
 	defer func() {
@@ -44,10 +45,10 @@ func (s *MemoryProductStore) List() []*model.Product {
 		res = append(res, v)
 	}
 
-	return res
+	return res, nil
 }
 
-func (s *MemoryProductStore) Add(p *model.Product) error {
+func (s *MemoryProductStore) CreateProduct(ctx context.Context, p *model.Product) error {
 	s.waitChan <- struct{}{}
 	s.mux.Lock()
 	defer func() {
@@ -65,7 +66,7 @@ func (s *MemoryProductStore) Add(p *model.Product) error {
 	return nil
 }
 
-func (s *MemoryProductStore) Delete(id uint) error {
+func (s *MemoryProductStore) DeleteProduct(ctx context.Context, id uint) error {
 	s.waitChan <- struct{}{}
 	s.mux.Lock()
 	defer func() {
@@ -81,7 +82,7 @@ func (s *MemoryProductStore) Delete(id uint) error {
 	return nil
 }
 
-func (s MemoryProductStore) Update(p *model.Product) error {
+func (s *MemoryProductStore) UpdateProduct(ctx context.Context, p *model.Product) error {
 	s.waitChan <- struct{}{}
 	s.mux.Lock()
 	defer func() {
@@ -95,4 +96,19 @@ func (s MemoryProductStore) Update(p *model.Product) error {
 
 	s.data[p.GetId()] = p
 	return nil
+}
+
+func (s *MemoryProductStore) GetProductOne(ctx context.Context, id int64) (*model.Product, error) {
+	s.waitChan <- struct{}{}
+	s.mux.RLock()
+	defer func() {
+		s.mux.RUnlock()
+		<-s.waitChan
+	}()
+
+	if product, ok := s.data[uint(id)]; ok {
+		return product, nil
+	}
+
+	return nil, errors.Wrapf(ErrProductNotExist, "id: %d", id)
 }

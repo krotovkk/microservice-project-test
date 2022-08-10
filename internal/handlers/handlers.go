@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -25,7 +26,7 @@ func NewBotHandler(service ports.ProductService) *BotHandler {
 func (bh *BotHandler) ListProducts(args string) string {
 	var res string
 
-	products := bh.productService.List()
+	products, _ := bh.productService.GetAllProducts(context.Background(), 0, 0)
 
 	if len(products) == 0 {
 		return fmt.Sprintf("No products available")
@@ -48,7 +49,7 @@ func (bh *BotHandler) AddProduct(args string) string {
 		return err.Error()
 	}
 
-	err = bh.productService.Create(name, price)
+	err = bh.productService.CreateProduct(context.Background(), name, price)
 	if err != nil {
 		return err.Error()
 	}
@@ -65,7 +66,7 @@ func (bh *BotHandler) DeleteProduct(args string) string {
 	if err != nil {
 		return err.Error()
 	}
-	err = bh.productService.Delete(uint(id))
+	err = bh.productService.DeleteProduct(context.Background(), uint(id))
 	if err != nil {
 		return err.Error()
 	}
@@ -89,7 +90,7 @@ func (bh *BotHandler) UpdateProduct(args string) string {
 		return err.Error()
 	}
 
-	err = bh.productService.Update(uint(id), name, price)
+	err = bh.productService.UpdateProduct(context.Background(), name, price, uint(id))
 	if err != nil {
 		return err.Error()
 	}
