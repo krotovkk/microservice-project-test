@@ -1,7 +1,8 @@
-package api
+package dataapi
 
 import (
 	"context"
+
 	"gitlab.ozon.dev/krotovkk/homework/internal/ports"
 	pb "gitlab.ozon.dev/krotovkk/homework/pkg/api"
 )

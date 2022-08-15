@@ -116,9 +116,18 @@
         "operationId": "Product_ProductList",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "A successful response.(streaming responses)",
             "schema": {
-              "$ref": "#/definitions/apiProductListResponse"
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/apiProductListResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of apiProductListResponse"
             }
           },
           "default": {

@@ -38,8 +38,8 @@ func (cs *CartPostgresStore) CreateCart(ctx context.Context, cart *model.Cart) e
 func (cs *CartPostgresStore) GetCartProducts(ctx context.Context, id int64) ([]*model.Product, error) {
 	query, args, err := squirrel.Select("id", "name", "price").
 		From("products").
-		LeftJoin("cart_product ON products.id = cart_product.product_id").
-		Where(squirrel.Eq{"cart_product.cart_id": id}).
+		LeftJoin("carts_products ON products.id = carts_products.product_id").
+		Where(squirrel.Eq{"carts_products.cart_id": id}).
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 
 	if err != nil {
@@ -48,7 +48,7 @@ func (cs *CartPostgresStore) GetCartProducts(ctx context.Context, id int64) ([]*
 
 	var products []*model.Product
 
-	err = pgxscan.Select(ctx, ps.conn, &products, query, args...)
+	err = pgxscan.Select(ctx, cs.conn, &products, query, args...)
 
 	if err != nil {
 		return nil, fmt.Errorf("CartPostgresStore.GetCartProducts: select: %w", err)

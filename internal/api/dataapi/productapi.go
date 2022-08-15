@@ -1,7 +1,8 @@
-package api
+package dataapi
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -10,6 +11,8 @@ import (
 	"gitlab.ozon.dev/krotovkk/homework/internal/store/memorystore"
 	pb "gitlab.ozon.dev/krotovkk/homework/pkg/api"
 )
+
+const streamProductsLimit = 5
 
 func NewProductServer(productService ports.ProductService) pb.ProductServer {
 	return &productServer{
@@ -54,22 +57,26 @@ func (s *productServer) ProductUpdate(ctx context.Context, req *pb.ProductUpdate
 	return &pb.ProductUpdateResponse{}, nil
 }
 
-func (s *productServer) ProductList(ctx context.Context, req *pb.ProductListRequest) (*pb.ProductListResponse, error) {
-	products, err := s.productService.GetAllProducts(ctx, req.GetLimit(), req.GetOffset())
+func (s *productServer) ProductList(req *pb.ProductListRequest, res pb.Product_ProductListServer) error {
+	products, err := s.productService.GetAllProducts(context.Background(), req.GetLimit(), req.GetOffset())
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	result := make([]*pb.ProductListResponse_Product, 0, len(products))
-	for _, product := range products {
-		result = append(result, &pb.ProductListResponse_Product{
+	buffer := make([]*pb.ProductListResponse_Product, 0, streamProductsLimit)
+	for index, product := range products {
+		buffer = append(buffer, &pb.ProductListResponse_Product{
 			Id:    uint64(product.GetId()),
 			Name:  product.GetName(),
 			Price: product.GetPrice(),
 		})
+		if len(buffer) == streamProductsLimit || index == len(products)-1 {
+			res.Send(&pb.ProductListResponse{Products: buffer})
+			buffer = buffer[:0]
+		}
 	}
 
-	return &pb.ProductListResponse{Products: result}, nil
+	return nil
 }
 
 func (s *productServer) ProductDelete(ctx context.Context, req *pb.ProductDeleteRequest) (*pb.ProductDeleteResponse, error) {
