@@ -1,6 +1,20 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pkg/errors"
+)
+
+const (
+	MaxNameLength = 30
+)
+
+var (
+	errInvalidProductId    = errors.New("wrong product id value, must be greater than 0")
+	errInvalidProductPrice = errors.New("wrong product price value, must be greater than 0")
+	errInvalidProductName  = errors.New("wrong product name length")
+)
 
 type Product struct {
 	Id    uint    `db:"id"`
@@ -57,4 +71,28 @@ func (p *Product) GetPrice() float64 {
 
 func (p *Product) String() string {
 	return fmt.Sprintf("Id: <%v>; Name: <%v>; Price: %.2f\n", p.Id, p.Name, p.Price)
+}
+
+func (p *Product) CheckId() error {
+	if p.Id < 1 {
+		return errInvalidCartId
+	}
+
+	return nil
+}
+
+func (p *Product) CheckPrice() error {
+	if p.Price <= 0 {
+		return errInvalidProductPrice
+	}
+
+	return nil
+}
+
+func (p *Product) CheckName() error {
+	if len(p.Name) == 0 || len(p.Name) > MaxNameLength {
+		return errInvalidProductName
+	}
+
+	return nil
 }

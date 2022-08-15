@@ -1,4 +1,4 @@
-package restcommander
+package datarestcommander
 
 import (
 	"context"

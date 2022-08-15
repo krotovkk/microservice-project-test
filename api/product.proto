@@ -15,7 +15,7 @@ service Product {
   };
 
   // list products endpoint
-  rpc ProductList(ProductListRequest) returns (ProductListResponse) {
+  rpc ProductList(ProductListRequest) returns (stream ProductListResponse) {
     option (google.api.http) = {
       get: "/v1/products"
     };

@@ -25,7 +25,7 @@ type ProductClient interface {
 	// create product endpoint
 	ProductCreate(ctx context.Context, in *ProductCreateRequest, opts ...grpc.CallOption) (*ProductCreateResponse, error)
 	// list products endpoint
-	ProductList(ctx context.Context, in *ProductListRequest, opts ...grpc.CallOption) (*ProductListResponse, error)
+	ProductList(ctx context.Context, in *ProductListRequest, opts ...grpc.CallOption) (Product_ProductListClient, error)
 	// update product endpoint
 	ProductUpdate(ctx context.Context, in *ProductUpdateRequest, opts ...grpc.CallOption) (*ProductUpdateResponse, error)
 	// delete product endpoint
@@ -49,13 +49,36 @@ func (c *productClient) ProductCreate(ctx context.Context, in *ProductCreateRequ
 	return out, nil
 }
 
-func (c *productClient) ProductList(ctx context.Context, in *ProductListRequest, opts ...grpc.CallOption) (*ProductListResponse, error) {
-	out := new(ProductListResponse)
-	err := c.cc.Invoke(ctx, "/homework.api.Product/ProductList", in, out, opts...)
+func (c *productClient) ProductList(ctx context.Context, in *ProductListRequest, opts ...grpc.CallOption) (Product_ProductListClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Product_ServiceDesc.Streams[0], "/homework.api.Product/ProductList", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &productProductListClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Product_ProductListClient interface {
+	Recv() (*ProductListResponse, error)
+	grpc.ClientStream
+}
+
+type productProductListClient struct {
+	grpc.ClientStream
+}
+
+func (x *productProductListClient) Recv() (*ProductListResponse, error) {
+	m := new(ProductListResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *productClient) ProductUpdate(ctx context.Context, in *ProductUpdateRequest, opts ...grpc.CallOption) (*ProductUpdateResponse, error) {
@@ -83,7 +106,7 @@ type ProductServer interface {
 	// create product endpoint
 	ProductCreate(context.Context, *ProductCreateRequest) (*ProductCreateResponse, error)
 	// list products endpoint
-	ProductList(context.Context, *ProductListRequest) (*ProductListResponse, error)
+	ProductList(*ProductListRequest, Product_ProductListServer) error
 	// update product endpoint
 	ProductUpdate(context.Context, *ProductUpdateRequest) (*ProductUpdateResponse, error)
 	// delete product endpoint
@@ -98,8 +121,8 @@ type UnimplementedProductServer struct {
 func (UnimplementedProductServer) ProductCreate(context.Context, *ProductCreateRequest) (*ProductCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProductCreate not implemented")
 }
-func (UnimplementedProductServer) ProductList(context.Context, *ProductListRequest) (*ProductListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ProductList not implemented")
+func (UnimplementedProductServer) ProductList(*ProductListRequest, Product_ProductListServer) error {
+	return status.Errorf(codes.Unimplemented, "method ProductList not implemented")
 }
 func (UnimplementedProductServer) ProductUpdate(context.Context, *ProductUpdateRequest) (*ProductUpdateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProductUpdate not implemented")
@@ -138,22 +161,25 @@ func _Product_ProductCreate_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Product_ProductList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ProductListRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _Product_ProductList_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ProductListRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(ProductServer).ProductList(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/homework.api.Product/ProductList",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProductServer).ProductList(ctx, req.(*ProductListRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(ProductServer).ProductList(m, &productProductListServer{stream})
+}
+
+type Product_ProductListServer interface {
+	Send(*ProductListResponse) error
+	grpc.ServerStream
+}
+
+type productProductListServer struct {
+	grpc.ServerStream
+}
+
+func (x *productProductListServer) Send(m *ProductListResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _Product_ProductUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -204,10 +230,6 @@ var Product_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Product_ProductCreate_Handler,
 		},
 		{
-			MethodName: "ProductList",
-			Handler:    _Product_ProductList_Handler,
-		},
-		{
 			MethodName: "ProductUpdate",
 			Handler:    _Product_ProductUpdate_Handler,
 		},
@@ -216,6 +238,12 @@ var Product_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Product_ProductDelete_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ProductList",
+			Handler:       _Product_ProductList_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "api/product.proto",
 }
