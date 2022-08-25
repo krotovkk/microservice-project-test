@@ -39,22 +39,23 @@ func (ps *PostgresProductStore) GetAllProducts(ctx context.Context, limit uint64
 	return products, nil
 }
 
-func (ps *PostgresProductStore) CreateProduct(ctx context.Context, p *model.Product) error {
+func (ps *PostgresProductStore) CreateProduct(ctx context.Context, p *model.Product) (*model.Product, error) {
 	query, args, err := squirrel.Insert("products").
 		Columns("name", "price").
 		Values(p.GetName(), p.GetPrice()).
+		Suffix("RETURNING id").
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 
 	if err != nil {
-		return fmt.Errorf("PostgresProductStore.CreateProduct: to sql: %w", err)
+		return nil, fmt.Errorf("PostgresProductStore.CreateProduct: to sql: %w", err)
 	}
 
-	_, err = ps.conn.Exec(ctx, query, args...)
+	err = ps.conn.QueryRow(ctx, query, args...).Scan(&p.Id)
 	if err != nil {
-		return fmt.Errorf("PostgresProductStore.CreateProduct: insert: %w", err)
+		return nil, fmt.Errorf("PostgresProductStore.CreateProduct: insert: %w", err)
 	}
 
-	return nil
+	return p, nil
 }
 
 func (ps *PostgresProductStore) DeleteProduct(ctx context.Context, id uint) error {

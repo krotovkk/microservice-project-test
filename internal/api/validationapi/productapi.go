@@ -2,12 +2,13 @@ package validationapi
 
 import (
 	"context"
+	"io"
+
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/krotovkk/homework/internal/model"
 	pb "gitlab.ozon.dev/krotovkk/homework/pkg/api"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"io"
 )
 
 var (

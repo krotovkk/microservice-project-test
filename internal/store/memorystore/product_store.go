@@ -48,7 +48,7 @@ func (s *MemoryProductStore) GetAllProducts(context.Context, uint64, uint64) ([]
 	return res, nil
 }
 
-func (s *MemoryProductStore) CreateProduct(ctx context.Context, p *model.Product) error {
+func (s *MemoryProductStore) CreateProduct(ctx context.Context, p *model.Product) (*model.Product, error) {
 	s.waitChan <- struct{}{}
 	s.mux.Lock()
 	defer func() {
@@ -59,11 +59,11 @@ func (s *MemoryProductStore) CreateProduct(ctx context.Context, p *model.Product
 	s.lastId++
 	p.SetId(s.lastId)
 	if _, ok := s.data[p.GetId()]; ok {
-		return errors.Wrapf(ErrProductExist, "id: %d", p.GetId())
+		return nil, errors.Wrapf(ErrProductExist, "id: %d", p.GetId())
 	}
 
 	s.data[p.GetId()] = p
-	return nil
+	return nil, nil
 }
 
 func (s *MemoryProductStore) DeleteProduct(ctx context.Context, id uint) error {

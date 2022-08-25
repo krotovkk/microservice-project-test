@@ -1,15 +1,28 @@
 services:
-  postgres:
+  postgres-dev:
     image: postgres:14.4
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: products
-    container_name: 'postgresql-container-products'
+    container_name: 'postgresql-container-dev'
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
       - ./postgresql/postgres.conf:/etc/postgresql/postgresql.conf
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     ports:
       - 80:5432
+    restart: always
+  postgres-test:
+    image: postgres:14.4
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: products
+    container_name: 'postgresql-container-test'
+    volumes:
+      - ./postgresql/postgres.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    ports:
+      - 81:5432
     restart: always

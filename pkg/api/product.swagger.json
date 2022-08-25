@@ -173,7 +173,20 @@
       }
     },
     "apiProductCreateResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        }
+      }
     },
     "apiProductDeleteResponse": {
       "type": "object"

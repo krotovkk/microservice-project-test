@@ -35,7 +35,10 @@ service Cart {
 
 message CartCreateRequest {
 }
-message CartCreateResponse {}
+message CartCreateResponse {
+  int64 id = 1;
+  int64 createdAt = 2;
+}
 
 // ---------------------------------------------------------------------------------------------------------------------
 // CartGetProducts endpoint messages

@@ -3,6 +3,7 @@ package postgresstore
 import (
 	"context"
 	"fmt"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
 
@@ -17,22 +18,23 @@ func NewCartPostgresStore(store *PostgresStore) *CartPostgresStore {
 	return &CartPostgresStore{PostgresStore: store}
 }
 
-func (cs *CartPostgresStore) CreateCart(ctx context.Context, cart *model.Cart) error {
+func (cs *CartPostgresStore) CreateCart(ctx context.Context, cart *model.Cart) (*model.Cart, error) {
 	query, args, err := squirrel.Insert("carts").
 		Columns("created_at").
 		Values(cart.CreatedAt).
+		Suffix("RETURNING id").
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 
 	if err != nil {
-		return fmt.Errorf("CartPostgresStore.CreateCart: to sql: %w", err)
+		return nil, fmt.Errorf("CartPostgresStore.CreateCart: to sql: %w", err)
 	}
 
-	_, err = cs.conn.Exec(ctx, query, args...)
+	err = cs.conn.QueryRow(ctx, query, args...).Scan(&cart.Id)
 	if err != nil {
-		return fmt.Errorf("CartPostgresStore.CreateCart: insert: %w", err)
+		return nil, fmt.Errorf("CartPostgresStore.CreateCart: insert: %w", err)
 	}
 
-	return nil
+	return cart, nil
 }
 
 func (cs *CartPostgresStore) GetCartProducts(ctx context.Context, id int64) ([]*model.Product, error) {
