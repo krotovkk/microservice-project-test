@@ -2,11 +2,12 @@ package datagrpccommander
 
 import (
 	"fmt"
+	"log"
+	"net"
+
 	"gitlab.ozon.dev/krotovkk/homework/config"
 	"gitlab.ozon.dev/krotovkk/homework/internal/api/dataapi"
 	"gitlab.ozon.dev/krotovkk/homework/internal/ports"
-	"log"
-	"net"
 
 	"google.golang.org/grpc"
 

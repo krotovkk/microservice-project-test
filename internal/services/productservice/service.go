@@ -17,10 +17,10 @@ func NewProductService(store ports.ProductStore) *ProductService {
 	}
 }
 
-func (ps *ProductService) CreateProduct(ctx context.Context, name string, price float64) error {
+func (ps *ProductService) CreateProduct(ctx context.Context, name string, price float64) (*model.Product, error) {
 	product, err := model.NewProduct(0, name, price)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	return ps.productStore.CreateProduct(ctx, product)

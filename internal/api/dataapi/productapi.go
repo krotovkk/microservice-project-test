@@ -38,13 +38,13 @@ func validateError(err error) error {
 }
 
 func (s *productServer) ProductCreate(ctx context.Context, req *pb.ProductCreateRequest) (*pb.ProductCreateResponse, error) {
-	err := s.productService.CreateProduct(ctx, req.GetName(), req.GetPrice())
+	p, err := s.productService.CreateProduct(ctx, req.GetName(), req.GetPrice())
 
 	if err != nil {
 		return nil, validateError(err)
 	}
 
-	return &pb.ProductCreateResponse{}, nil
+	return &pb.ProductCreateResponse{Id: int64(p.Id), Name: p.Name, Price: p.Price}, nil
 }
 
 func (s *productServer) ProductUpdate(ctx context.Context, req *pb.ProductUpdateRequest) (*pb.ProductUpdateResponse, error) {

@@ -28,3 +28,7 @@ func (s *PostgresStore) Product() ports.ProductStore {
 func (s *PostgresStore) Cart() ports.CartStore {
 	return s.cartStore
 }
+
+func (s *PostgresStore) Conn() *pgx.Conn {
+	return s.conn
+}

@@ -49,7 +49,7 @@ func (bh *BotHandler) AddProduct(args string) string {
 		return err.Error()
 	}
 
-	err = bh.productService.CreateProduct(context.Background(), name, price)
+	_, err = bh.productService.CreateProduct(context.Background(), name, price)
 	if err != nil {
 		return err.Error()
 	}

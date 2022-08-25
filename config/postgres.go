@@ -2,7 +2,7 @@ package config
 
 const (
 	Host     = "localhost"
-	Port     = 80
+	Port     = 81
 	User     = "user"
 	Password = "password"
 	DbName   = "products"

@@ -18,8 +18,8 @@ func NewCartServer(service ports.CartService) *cartServer {
 }
 
 func (s *cartServer) CartCreate(ctx context.Context, req *pb.CartCreateRequest) (*pb.CartCreateResponse, error) {
-	err := s.service.CreateCart(ctx)
-	return &pb.CartCreateResponse{}, err
+	c, err := s.service.CreateCart(ctx)
+	return &pb.CartCreateResponse{Id: c.Id, CreatedAt: c.CreatedAt}, err
 }
 
 func (s *cartServer) CartGetProducts(ctx context.Context, req *pb.CartGetProductsRequest) (*pb.CartGetProductsResponse, error) {

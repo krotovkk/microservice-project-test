@@ -2,9 +2,10 @@ package cartservice
 
 import (
 	"context"
+	"time"
+
 	"gitlab.ozon.dev/krotovkk/homework/internal/model"
 	"gitlab.ozon.dev/krotovkk/homework/internal/ports"
-	"time"
 )
 
 type CartService struct {
@@ -15,7 +16,7 @@ func NewCartService(store ports.CartStore) *CartService {
 	return &CartService{cartStore: store}
 }
 
-func (cs *CartService) CreateCart(ctx context.Context) error {
+func (cs *CartService) CreateCart(ctx context.Context) (*model.Cart, error) {
 	cart := &model.Cart{CreatedAt: time.Now().UTC().Unix()}
 
 	return cs.cartStore.CreateCart(ctx, cart)

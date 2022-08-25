@@ -129,7 +129,17 @@
       "type": "object"
     },
     "apiCartCreateResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
     },
     "apiCartGetProductsResponse": {
       "type": "object",
