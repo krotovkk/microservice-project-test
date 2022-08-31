@@ -2,6 +2,7 @@ package validationapi
 
 import (
 	"context"
+	"gitlab.ozon.dev/krotovkk/homework/internal/ports"
 	"io"
 
 	"github.com/pkg/errors"
@@ -18,12 +19,14 @@ var (
 
 type productServer struct {
 	pb.UnimplementedProductServer
-	client pb.ProductClient
+	client  pb.ProductClient
+	service ports.ProductService
 }
 
-func NewProductServer(productClient pb.ProductClient) pb.ProductServer {
+func NewProductServer(productClient pb.ProductClient, service ports.ProductService) pb.ProductServer {
 	return &productServer{
-		client: productClient,
+		client:  productClient,
+		service: service,
 	}
 }
 
@@ -38,7 +41,9 @@ func (s *productServer) ProductCreate(ctx context.Context, req *pb.ProductCreate
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	return s.client.ProductCreate(ctx, req)
+	_, err := s.service.CreateProduct(ctx, product.Name, product.Price)
+
+	return &pb.ProductCreateResponse{}, err
 }
 
 func (s *productServer) ProductUpdate(ctx context.Context, req *pb.ProductUpdateRequest) (*pb.ProductUpdateResponse, error) {
@@ -56,7 +61,9 @@ func (s *productServer) ProductUpdate(ctx context.Context, req *pb.ProductUpdate
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	return s.client.ProductUpdate(ctx, req)
+	err := s.service.UpdateProduct(ctx, product.Name, product.Price, product.Id)
+
+	return &pb.ProductUpdateResponse{}, err
 }
 
 func (s *productServer) ProductList(req *pb.ProductListRequest, res pb.Product_ProductListServer) error {
@@ -95,5 +102,7 @@ func (s *productServer) ProductDelete(ctx context.Context, req *pb.ProductDelete
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	return s.client.ProductDelete(ctx, req)
+	err := s.service.DeleteProduct(ctx, product.Id)
+
+	return &pb.ProductDeleteResponse{}, err
 }

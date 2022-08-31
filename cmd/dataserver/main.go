@@ -3,16 +3,22 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
+	"gitlab.ozon.dev/krotovkk/homework/internal/commander/brokercommander"
 	"log"
+	"os"
 
 	"github.com/jackc/pgx/v4"
 
 	"gitlab.ozon.dev/krotovkk/homework/config"
 	"gitlab.ozon.dev/krotovkk/homework/internal/commander/datagrpccommander"
-	"gitlab.ozon.dev/krotovkk/homework/internal/commander/datarestcommander"
 	"gitlab.ozon.dev/krotovkk/homework/internal/services"
 	"gitlab.ozon.dev/krotovkk/homework/internal/store/postgresstore"
 )
+
+func init() {
+	logrus.SetOutput(os.Stdout)
+}
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -35,6 +41,11 @@ func main() {
 	store := postgresstore.NewPostgresStore(conn)
 	service := services.NewAppService(store)
 
-	go datagrpccommander.RunGrpcServer(service)
-	datarestcommander.Run()
+	grpcCh := make(chan struct{})
+	brokerCh := make(chan struct{})
+
+	go datagrpccommander.RunGrpcServer(service, grpcCh)
+	go brokercommander.Run(service, brokerCh)
+	<-grpcCh
+	<-brokerCh
 }

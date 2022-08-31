@@ -14,7 +14,9 @@ import (
 	pb "gitlab.ozon.dev/krotovkk/homework/pkg/api"
 )
 
-func RunGrpcServer(service ports.Service) {
+func RunGrpcServer(service ports.Service, ch chan struct{}) {
+	defer func() { ch <- struct{}{} }()
+
 	address := fmt.Sprintf("localhost:%d", config.DataGrpcServerPort)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
