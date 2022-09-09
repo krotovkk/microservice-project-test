@@ -3,8 +3,10 @@ package consumer
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
+	"gitlab.ozon.dev/krotovkk/homework/internal/model"
 	"gitlab.ozon.dev/krotovkk/homework/internal/services/broker"
 	"go.opencensus.io/trace"
 )
@@ -84,6 +86,47 @@ func (pc *AddProductToCartHandler) ConsumeClaim(session sarama.ConsumerGroupSess
 		logrus.WithFields(logrus.Fields{"topic": msg.Topic, "traceId": span.SpanContext().TraceID.String()}).Infof("Span info")
 
 		err = pc.service.Cart().AddProductToCart(ctx, ids.ProductId, ids.CartId)
+		if err != nil {
+			pc.incomeFailedCnt.Inc()
+			logrus.WithFields(logrus.Fields{"topic": msg.Topic, "error": err}).Warnf("Failed operation")
+			continue
+		}
+		pc.incomeSuccessCnt.Inc()
+		logrus.WithFields(logrus.Fields{"topic": msg.Topic}).Infof("Successfuly operation")
+	}
+
+	return nil
+}
+
+type GetCartProductsHandler struct {
+	*Consumer
+}
+
+func (pc *GetCartProductsHandler) Setup(session sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (pc *GetCartProductsHandler) Cleanup(session sarama.ConsumerGroupSession) error {
+	return nil
+}
+
+func (pc *GetCartProductsHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	ctx := context.Background()
+
+	for msg := range claim.Messages() {
+		pc.incomeCnt.Inc()
+		session.MarkMessage(msg, "")
+
+		cart := &model.Cart{}
+		err := json.Unmarshal(msg.Value, cart)
+
+		if err != nil {
+			pc.incomeFailedCnt.Inc()
+			logrus.WithFields(logrus.Fields{"topic": msg.Topic, "error": err}).Warnf("Fail to parse")
+			continue
+		}
+
+		_, err = pc.service.Cart().GetCartProducts(ctx, cart.Id)
 		if err != nil {
 			pc.incomeFailedCnt.Inc()
 			logrus.WithFields(logrus.Fields{"topic": msg.Topic, "error": err}).Warnf("Failed operation")

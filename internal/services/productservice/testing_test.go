@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+
 	"gitlab.ozon.dev/krotovkk/homework/internal/ports"
 	mock_stores "gitlab.ozon.dev/krotovkk/homework/internal/store/mocks"
 )
@@ -17,7 +18,7 @@ type productServiceFixture struct {
 func setUpFixture(t *testing.T) *productServiceFixture {
 	ctrl := gomock.NewController(t)
 	productStore := mock_stores.NewMockProductStore(ctrl)
-	productService := NewProductService(productStore)
+	productService := NewProductService(&Options{Store: productStore})
 
 	return &productServiceFixture{productService: productService, productStore: productStore, ctrl: ctrl}
 }

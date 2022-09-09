@@ -2,8 +2,9 @@ package validationapi
 
 import (
 	"context"
-	"gitlab.ozon.dev/krotovkk/homework/internal/ports"
 	"io"
+
+	"gitlab.ozon.dev/krotovkk/homework/internal/ports"
 
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/krotovkk/homework/internal/model"

@@ -3,6 +3,7 @@ package brokercommander
 import (
 	"context"
 	"fmt"
+
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/krotovkk/homework/config"

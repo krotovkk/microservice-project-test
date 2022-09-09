@@ -3,10 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"gitlab.ozon.dev/krotovkk/homework/internal/commander/brokercommander"
 	"log"
 	"os"
+
+	"github.com/go-redis/redis"
+	"github.com/sirupsen/logrus"
+	"gitlab.ozon.dev/krotovkk/homework/internal/cache/rediscache"
+	"gitlab.ozon.dev/krotovkk/homework/internal/commander/brokercommander"
 
 	"github.com/jackc/pgx/v4"
 
@@ -27,6 +30,18 @@ func main() {
 	psqlConn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s connect_timeout=%d sslmode=disable",
 		config.Host, config.Port, config.User, config.Password, config.DbName, config.ConnectTimeout)
 
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", config.RedisHost, config.RedisPort),
+		DB:       config.RedisDB,
+		Password: config.RedisPassword,
+	})
+
+	redisPing := redisClient.Ping()
+
+	if redisPing.Err() != nil {
+		logrus.WithFields(logrus.Fields{"port": config.RedisPort, "host": config.RedisHost, "error": redisPing.Err()}).Fatal()
+	}
+
 	conn, err := pgx.Connect(ctx, psqlConn)
 	if err != nil {
 		log.Fatal(err)
@@ -39,7 +54,9 @@ func main() {
 	}
 
 	store := postgresstore.NewPostgresStore(conn)
-	service := services.NewAppService(store)
+	cache := rediscache.NewRedisCache(redisClient)
+
+	service := services.NewAppService(&services.Options{Store: store, Cache: cache})
 
 	grpcCh := make(chan struct{})
 	brokerCh := make(chan struct{})

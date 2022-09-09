@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/krotovkk/homework/internal/common"
@@ -50,7 +51,32 @@ func (cs *CartProducer) CreateCart(ctx context.Context) (*model.Cart, error) {
 }
 
 func (cs *CartProducer) GetCartProducts(ctx context.Context, id int64) ([]*model.Product, error) {
-	return nil, nil
+	product := model.Cart{Id: id}
+	jsonCart, err := json.Marshal(product)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"operation": "get cart products", "error": err}).Warnf("Fail while marshaling")
+		return nil, err
+	}
+
+	_, _, err = cs.producer.SendMessage(&sarama.ProducerMessage{
+		Topic: common.CartGetProducts,
+		Key:   sarama.StringEncoder(id),
+		Value: sarama.ByteEncoder(jsonCart),
+	})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"operation": "get cart products", "error": err}).Warnf("Fail to send messege to broker")
+		return nil, err
+	}
+
+	products, err := cs.readProductsFromCache(common.CartProductsChanel)
+
+	logrus.WithFields(logrus.Fields{"operation": "get cart products"}).Infof("Products readed")
+
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"operation": "get cart products", "error": err}).Warnf("fail to read products from cache")
+	}
+
+	return products, nil
 }
 
 func (cs *CartProducer) AddProductToCart(ctx context.Context, productId, cartId int64) error {

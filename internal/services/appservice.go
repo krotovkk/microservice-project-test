@@ -6,14 +6,19 @@ import (
 	"gitlab.ozon.dev/krotovkk/homework/internal/services/productservice"
 )
 
+type Options struct {
+	Store ports.Store
+	Cache ports.Cache
+}
+
 type AppService struct {
 	productService ports.ProductService
 	cartService    ports.CartService
 }
 
-func NewAppService(store ports.Store) *AppService {
-	productService := productservice.NewProductService(store.Product())
-	cartService := cartservice.NewCartService(store.Cart())
+func NewAppService(options *Options) *AppService {
+	productService := productservice.NewProductService(&productservice.Options{Store: options.Store.Product(), Cache: options.Cache})
+	cartService := cartservice.NewCartService(&cartservice.Options{Store: options.Store.Cart(), Cache: options.Cache})
 
 	return &AppService{
 		productService: productService,

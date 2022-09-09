@@ -17,7 +17,7 @@ type cartServiceFixture struct {
 func setUpFixture(t *testing.T) *cartServiceFixture {
 	ctrl := gomock.NewController(t)
 	cartStore := mock_stores.NewMockCartStore(ctrl)
-	cartService := NewCartService(cartStore)
+	cartService := NewCartService(&Options{Store: cartStore})
 
 	return &cartServiceFixture{cartService: cartService, cartStore: cartStore, ctrl: ctrl}
 }
