@@ -2,9 +2,10 @@ package consumer
 
 import (
 	"expvar"
+	"sync"
+
 	"gitlab.ozon.dev/krotovkk/homework/internal/counters"
 	"gitlab.ozon.dev/krotovkk/homework/internal/ports"
-	"sync"
 )
 
 type Consumer struct {

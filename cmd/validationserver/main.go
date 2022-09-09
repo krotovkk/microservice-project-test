@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/Shopify/sarama"
-	"github.com/sirupsen/logrus"
-	"gitlab.ozon.dev/krotovkk/homework/internal/services/broker"
 	"net"
 	"os"
+
+	"github.com/Shopify/sarama"
+	"github.com/go-redis/redis"
+	"github.com/sirupsen/logrus"
+
+	"gitlab.ozon.dev/krotovkk/homework/internal/services/broker"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -27,6 +30,12 @@ func main() {
 		logrus.WithError(err).Fatal()
 	}
 
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", config.RedisHost, config.RedisPort),
+		DB:       config.RedisDB,
+		Password: config.RedisPassword,
+	})
+
 	target := fmt.Sprintf(":%d", config.DataGrpcServerPort)
 	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
@@ -41,7 +50,7 @@ func main() {
 		logrus.WithError(err).Fatal()
 	}
 
-	brokerService := broker.NewBrokerService(producer)
+	brokerService := broker.NewBrokerService(producer, redisClient)
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterProductServer(grpcServer, validationapi.NewProductServer(pb.NewProductClient(conn), brokerService.Product()))

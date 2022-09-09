@@ -94,3 +94,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./kafka_data/502:/kafka
+  redis:
+    image: redis
+    container_name: redis-container
+    ports:
+      - "6379:6379"

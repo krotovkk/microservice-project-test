@@ -17,8 +17,10 @@ func NewBrokerRouter() *brokerRouter {
 func (r *brokerRouter) RegisterRoutes(consumer *api.Consumer) {
 	r.routes[common.CartCreate] = &api.CartCreateHandler{Consumer: consumer}
 	r.routes[common.CartAddProduct] = &api.AddProductToCartHandler{Consumer: consumer}
+	r.routes[common.CartGetProducts] = &api.GetCartProductsHandler{Consumer: consumer}
 
 	r.routes[common.ProductCreate] = &api.ProductCreateHandler{Consumer: consumer}
 	r.routes[common.ProductUpdate] = &api.ProductUpdateHandler{Consumer: consumer}
 	r.routes[common.ProductDelete] = &api.ProductDeleteHandler{Consumer: consumer}
+	r.routes[common.ProductsList] = &api.ProductListHandler{Consumer: consumer}
 }

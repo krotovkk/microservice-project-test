@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/Shopify/sarama"
 	"github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/krotovkk/homework/internal/common"
@@ -97,5 +98,29 @@ func (ps *ProductProducer) DeleteProduct(ctx context.Context, id uint) error {
 }
 
 func (ps *ProductProducer) GetAllProducts(ctx context.Context, limit uint64, offset uint64) ([]*model.Product, error) {
-	return nil, nil
+	data := model.LimitOffset{Limit: limit, Offset: offset}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"operation": "get all products", "error": err}).Warnf("Fail while marshaling")
+		return nil, err
+	}
+
+	_, _, err = ps.producer.SendMessage(&sarama.ProducerMessage{
+		Topic: common.ProductsList,
+		Key:   sarama.StringEncoder(1),
+		Value: sarama.ByteEncoder(jsonData),
+	})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"operation": "get all products"}).Warnf("Fail to send messege to broker")
+		return nil, err
+	}
+
+	products, err := ps.readProductsFromCache(common.ProductsListChanel)
+
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"operation": "get cart products", "error": err}).Warnf("fail to read products from cache")
+	}
+
+	return products, nil
 }
